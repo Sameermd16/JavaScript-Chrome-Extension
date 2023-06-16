@@ -2,7 +2,8 @@ const saveInput = document.getElementById('input_btn');
 let myLeads = []
 const inputEl = document.getElementById('input_el')
 const ulEl = document.getElementById('ul_el')
-const deleteBtn = document.getElementById('delete_btn')
+const deleteAll = document.getElementById('delete_btn')
+const saveTab = document.getElementById('tab_btn')
 
 // 1. Turn the myLeads string into an array
 // myLeads = JSON.parse(myLeads)
@@ -14,16 +15,32 @@ const deleteBtn = document.getElementById('delete_btn')
 // 4. Console.log the string using typeof to verify that it's a string
 // console.log(typeof myLeads)
 const leadsFromLocalStorage = JSON.parse(localStorage.getItem("myLeads")) 
-console.log(leadsFromLocalStorage)
+// console.log(leadsFromLocalStorage)
 // 1. Check if leadsFromLocalStorage is truthy
 // 2. If so, set myLeads to its value and call renderLeads()
-console.log(Boolean(leadsFromLocalStorage))
+// console.log(Boolean(leadsFromLocalStorage))
 
 if(leadsFromLocalStorage) {
     myLeads = leadsFromLocalStorage 
-    renderLeads()
+    render(myLeads)
 }
 
+saveTab.addEventListener('click', () => {
+    //grab the current tab from the chrome api
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        myLeads.push(tabs[0].url)
+        localStorage.setItem('myLeads', JSON.stringify(myLeads))
+        render(myLeads)
+    })
+})
+
+// 2. Listen for double clicks on the delete button (google it!)
+// 3. When clicked, clear localStorage, myLeads, and the DOM
+deleteAll.addEventListener('dblclick', () => {
+    localStorage.clear()
+    myLeads = []
+    render(myLeads)
+})
 
 saveInput.addEventListener('click', () => {
     // Push the value from the inputEl into the myLeads array 
@@ -32,27 +49,21 @@ saveInput.addEventListener('click', () => {
     // Save the myLeads array to localStorage 
     // PS: remember JSON.stringify()
     localStorage.setItem('myLeads', JSON.stringify(myLeads)) 
-    console.log(localStorage.getItem("myLeads"))
-    renderLeads()
+    // console.log(localStorage.getItem("myLeads"))
+    render(myLeads)
 })
 
-function renderLeads() {
+function render(leads) {
 
     let listItems = ''
-    for(let i = 0; i < myLeads.length; i++) {
+    for(let i = 0; i < leads.length; i++) {
         listItems += `
             <li>
-                <a target='_blank' href='${myLeads[i]}' >
-                    ${myLeads[i]}
+                <a target='_blank' href='${leads[i]}' >
+                    ${leads[i]}
                 </a>
             </li>
         `
-        // create element
-        // set text content
-        // append to ul
-        // const li = document.createElement('li')
-        // li.textContent = myLeads[i] 
-        // ulEl.append(li)
     }
     ulEl.innerHTML = listItems
 }
